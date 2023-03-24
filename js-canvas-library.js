@@ -109,3 +109,106 @@ class JSImageAsset extends Image {
         this.src = path;
     }
 }
+
+// Keyboard listener
+const KEY_DOWN = 0;
+const KEY_UP = 1;
+
+class KeyboardListener {
+    constructor(gameEngine) {
+        this.gameEngine = gameEngine;
+        this.keys = [];
+    }
+    init() {
+        let setKey = this.#setKey.bind(this);
+        document.body.addEventListener("keydown", function(event) {
+            setKey(event.key.toUpperCase(), true);
+        });
+        document.body.addEventListener("keyup", function(event) {
+            setKey(event.key.toUpperCase(), false);
+        });
+    }
+    addListener(listenerType, action) {
+        let listenerName = null;
+
+        if(listenerType == KEY_DOWN) listenerName = "keydown";
+        if(listenerType == KEY_UP) listenerName = "keyup";
+
+        if(listenerName != null) {
+            document.body.addEventListener(listenerName, function() {
+                action();
+            });
+        }
+    }
+    isPressed(key) {
+        let keyBoolean = this.keys[key];
+
+        if(!keyBoolean) return false;
+        return keyBoolean;
+    }
+    #setKey(key, value) {
+        this.keys[key] = value;
+    }
+}
+
+// Mouse listener
+const MOUSE_DOWN = 0;
+const MOUSE_UP = 1;
+const MOUSE_CLICKED = 2;
+
+const MOUSE_MOVE = 3;
+const MOUSE_DRAG = 4;
+
+class MouseListener {
+    constructor(gameEngine) {
+        this.gameEngine = gameEngine;
+        this.clicked = false;
+    }
+    init() {
+        let setMouseClicked = this.#setMouseClicked.bind(this);
+        this.gameEngine.canvas.addEventListener("mousedown", function() {
+            setMouseClicked(true);
+        });
+        this.gameEngine.canvas.addEventListener("mouseup", function() {
+            setMouseClicked(false);
+        });
+    }
+    addListener(listenerType, action) {
+        let listenerName = null;
+
+        if(listenerType == MOUSE_DOWN) listenerName = "mousedown";
+        if(listenerType == MOUSE_UP) listenerName = "mouseup";
+        if(listenerType == MOUSE_CLICKED) listenerName = "click";
+        if(listenerType == MOUSE_MOVE) listenerName = "mousemove";
+        
+        let setMouseData = this.#setMouseData.bind(this);
+        if(listenerName != null) {
+
+            this.gameEngine.canvas.addEventListener(listenerName, function(event) {
+                setMouseData(event);
+                action();
+            });
+        }
+
+        let getMouseClicked = this.#getMouseClicked.bind(this);
+        if(listenerType == MOUSE_DRAG) {
+            this.gameEngine.canvas.addEventListener("mousemove", function(event) {
+                setMouseData(event);
+                if(getMouseClicked()) {
+                    action();
+                }
+            });
+        }
+    }
+    #setMouseData(jsMouseEvent) {
+        this.mouseX = jsMouseEvent.clientX - this.gameEngine.canvas.offsetLeft;
+        this.mouseY = jsMouseEvent.clientY - this.gameEngine.canvas.offsetTop;
+        this.button = jsMouseEvent.button;
+    }
+    #setMouseClicked(clicked) {
+        this.clicked = clicked;
+    }
+    #getMouseClicked() {
+        return this.clicked;
+    }
+}
